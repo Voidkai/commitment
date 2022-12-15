@@ -6,6 +6,10 @@ import (
 )
 
 func TestVerify(t *testing.T) {
-	c := commit([]byte("Hello world"))
-	assert.Equal(t, true, verify([]byte("hello world"), c))
+
+	r := setup()
+	value := []byte("")
+	c := commit(value, r)
+	assert.Equal(t, true, verify(value, r, c))
+
 }

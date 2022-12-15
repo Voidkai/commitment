@@ -7,30 +7,30 @@ import (
 	"fmt"
 )
 
-var b []byte
-
-func commit(x []byte) []byte {
-	h := sha256.New()
-	b := make([]byte, 32)
-	_, err := rand.Read(b)
+func setup() []byte {
+	r := make([]byte, 32)
+	_, err := rand.Read(r)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
-	// The slice should now contain random bytes instead of only zeroes.
-	h.Write(append(x, b...))
-	c := h.Sum(nil)
-	fmt.Printf("%x", h.Sum(nil))
-	return c
+	return r
 }
 
-func verify(x []byte, c []byte) bool {
+func commit(x []byte, r []byte) []byte {
 
-	h := sha256.New()
+	// The slice should now contain random bytes instead of only zeroes.
+	vR := append(x, r...)
+	c := sha256.Sum256(vR)
+	fmt.Printf("%x\n", c)
+	return c[:]
+}
 
-	h.Write(append(x, b...))
-	cc := h.Sum(nil)
+func verify(x []byte, r []byte, c []byte) bool {
 
-	if bytes.Compare(c, cc) == 0 {
+	vR := append(x, r...)
+	cc := sha256.Sum256(vR)
+	fmt.Printf("%x\n", cc)
+	if bytes.Compare(c, cc[:]) == 0 {
 		return true
 	} else {
 		return false
