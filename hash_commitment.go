@@ -1,4 +1,4 @@
-package hash_commitment
+package polynomial_commitment_kzg
 
 import (
 	"bytes"
@@ -21,7 +21,6 @@ func commit(x []byte, r []byte) []byte {
 	// The slice should now contain random bytes instead of only zeroes.
 	vR := append(x, r...)
 	c := sha256.Sum256(vR)
-	fmt.Printf("%x\n", c)
 	return c[:]
 }
 
@@ -29,7 +28,6 @@ func verify(x []byte, r []byte, c []byte) bool {
 
 	vR := append(x, r...)
 	cc := sha256.Sum256(vR)
-	fmt.Printf("%x\n", cc)
 	if bytes.Compare(c, cc[:]) == 0 {
 		return true
 	} else {
