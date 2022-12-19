@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/drand/kyber/group/mod"
 	"math/big"
+	"strconv"
 )
 
 type Polynomial struct {
@@ -14,6 +15,14 @@ type Polynomial struct {
 
 func (p *Polynomial) Init(coeffs []*mod.Int) *Polynomial {
 	return &Polynomial{coeffs, len(coeffs)}
+}
+
+func (p *Polynomial) InitFromCopy() *Polynomial {
+	r := make([]*mod.Int, p.Degree)
+	for i := 0; i < p.Degree; i++ {
+		r[i] = new(mod.Int).Set(p.Coefficient[i]).(*mod.Int)
+	}
+	return &Polynomial{r[:], p.Degree}
 }
 
 func (p *Polynomial) InitFromZerosArray(n int) *Polynomial {
@@ -45,6 +54,11 @@ func (p *Polynomial) InitPolZeroAt(pointPos, totalPoints int, height *mod.Int) *
 	return r
 }
 
+func (p *Polynomial) SetCoefficient(coef []*mod.Int) {
+	p.Coefficient = coef
+	p.Degree = len(coef)
+}
+
 // polynomial operation.
 
 func (p *Polynomial) Add(a, b *Polynomial) *Polynomial {
@@ -64,7 +78,7 @@ func (p *Polynomial) Sub(a, b *Polynomial) *Polynomial {
 		p.Coefficient[i] = new(mod.Int).Add(p.Coefficient[i], a.Coefficient[i]).(*mod.Int)
 	}
 	for i := 0; i < b.Degree; i++ {
-		p.Coefficient[i] = new(mod.Int).Sub(p.Coefficient[i], a.Coefficient[i]).(*mod.Int)
+		p.Coefficient[i] = new(mod.Int).Sub(p.Coefficient[i], b.Coefficient[i]).(*mod.Int)
 	}
 	return p
 }
@@ -82,7 +96,7 @@ func (p *Polynomial) Mul(a, b *Polynomial) *Polynomial {
 func (p *Polynomial) Div(a, b *Polynomial) (*Polynomial, *Polynomial) {
 	// https://en.wikipedia.org/wiki/Division_algorithm
 	p = new(Polynomial).InitFromZerosArray(a.Degree - b.Degree + 1)
-	rem := a
+	rem := a.InitFromCopy()
 	for rem.Degree >= b.Degree {
 		l := new(mod.Int).Div(rem.Coefficient[rem.Degree-1], b.Coefficient[b.Degree-1]).(*mod.Int)
 		pos := rem.Degree - b.Degree
@@ -91,7 +105,7 @@ func (p *Polynomial) Div(a, b *Polynomial) (*Polynomial, *Polynomial) {
 		aux1 := append(aux.Coefficient, l)
 		tempoly := new(Polynomial).Init(aux1)
 		aux2 := new(Polynomial).Sub(rem, new(Polynomial).Mul(b, tempoly))
-		rem.Coefficient = aux2.Coefficient[:aux2.Degree-1]
+		rem.SetCoefficient(aux2.Coefficient[:aux2.Degree-1])
 	}
 	return p, rem
 }
@@ -115,7 +129,7 @@ func (p *Polynomial) Eval(x *mod.Int) *mod.Int {
 	for i := 0; i < p.Degree; i++ {
 		xi := new(mod.Int).Exp(x, big.NewInt(int64(i)))
 		elem := new(mod.Int).Mul(p.Coefficient[i], xi)
-		r = new(mod.Int).Add(r, elem).(*mod.Int)
+		r.Add(r, elem)
 	}
 	return r
 }
@@ -126,7 +140,8 @@ func (p *Polynomial) ToString() string {
 		if bytes.Equal(p.Coefficient[i].V.Bytes(), big.NewInt(1).Bytes()) {
 			s += fmt.Sprintf("x%s + ", intToSNum(i))
 		} else if !bytes.Equal(p.Coefficient[i].V.Bytes(), big.NewInt(0).Bytes()) {
-			s += fmt.Sprintf("%sx%s + ", p.Coefficient[i], intToSNum(i))
+			t, _ := strconv.ParseInt(p.Coefficient[i].String(), 16, 64)
+			s += fmt.Sprintf("%sx%s + ", strconv.Itoa(int(t)), intToSNum(i))
 		}
 	}
 	s += p.Coefficient[0].String()
