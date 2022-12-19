@@ -24,7 +24,7 @@ func neg(a *big.Int) *big.Int {
 	return new(big.Int).Neg(a)
 }
 
-func TestPolynomial(t *testing.T) {
+func TestPoly(t *testing.T) {
 	b0 := big.NewInt(int64(0))
 	b1 := big.NewInt(int64(1))
 	b2 := big.NewInt(int64(2))

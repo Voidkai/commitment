@@ -1,4 +1,4 @@
-package hash_commitment
+package polynomial_commitment_kzg
 
 import (
 	"commitment/primitives"
