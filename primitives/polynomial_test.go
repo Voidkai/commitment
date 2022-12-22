@@ -16,23 +16,21 @@ func TestPolynomial_ToString(t *testing.T) {
 	// polynomialEval
 	// p(x) = x^3 + x + 5
 	p := new(Polynomial).Init([]*mod.Int{
-		new(mod.Int).Init(big.NewInt(5), Q),
-		new(mod.Int).Init(big.NewInt(1), Q), // x^1
-		new(mod.Int).Init(big.NewInt(0), Q), // x^2
-		new(mod.Int).Init(big.NewInt(1), Q), // x^3
+		mod.NewInt64(5, Q),
+		mod.NewInt64(1, Q), // x^1
+		mod.NewInt64(0, Q), // x^2
+		mod.NewInt64(1, Q), // x^3
 	})
-	assert.Equal(t, "x³ + x¹ + 05", p.ToString())
+	assert.Equal(t, "x³ + x¹ + 5", p.ToString())
 }
 
 func TestPolynomial_Add(t *testing.T) {
 	b0 := new(mod.Int).Init64(int64(0), Q)
 	b1 := new(mod.Int).Init64(int64(1), Q)
-	//b2 := new(mod.Int).Init64(int64(2), Q)
 	b3 := new(mod.Int).Init64(int64(3), Q)
 	b4 := new(mod.Int).Init64(int64(4), Q)
 	b5 := new(mod.Int).Init64(int64(5), Q)
 	b6 := new(mod.Int).Init64(int64(6), Q)
-	//b16 := new(mod.Int).Init64(int64(16), Q)
 
 	a := &Polynomial{[]*mod.Int{b1, b0, b5}, 3}
 	b := &Polynomial{[]*mod.Int{b3, b0, b1}, 3}
@@ -54,17 +52,18 @@ func TestPolynomial_Sub(t *testing.T) {
 	//b16 := new(mod.Int).Init64(int64(16), Q)
 	bn2 := new(mod.Int).Init64(int64(-2), Q)
 
-	a := &Polynomial{[]*mod.Int{b1, b0, b5}, 3}
-	b := &Polynomial{[]*mod.Int{b3, b0, b1}, 3}
+	a := &Polynomial{[]*mod.Int{b1, b0, b5}, 3} // 1 + 5x^2
+	b := &Polynomial{[]*mod.Int{b3, b0, b1}, 3} // 3 + x^2
 
 	// polynomial subtraction
 	o := new(Polynomial).Sub(a, b)
+	println(o.ToString())
 	assert.Equal(t, o.Coefficient, []*mod.Int{bn2, b0, b4})
 
 	c := new(Polynomial).Init([]*mod.Int{b5, b6, b1})
-	d := new(Polynomial).Init([]*mod.Int{b1, b3})
+	d := new(Polynomial).Init([]*mod.Int{b6, b3})
 	o = new(Polynomial).Sub(c, d)
-	assert.Equal(t, o, []*mod.Int{b4, b3, b1})
+	assert.Equal(t, o.Coefficient, []*mod.Int{new(mod.Int).Neg(b1).(*mod.Int), b3, b1})
 }
 
 func TestPolynomial_Mul(t *testing.T) {
@@ -131,7 +130,7 @@ func TestPolynomial_Eval(t *testing.T) {
 		new(mod.Int).Init(big.NewInt(0), Q), // x^2
 		new(mod.Int).Init(big.NewInt(1), Q), // x^3
 	})
-	assert.Equal(t, "x³ + x¹ + 05", p.ToString())
+	assert.Equal(t, "x³ + x¹ + 5", p.ToString())
 	o, _ := strconv.ParseInt(p.Eval(new(mod.Int).Init(big.NewInt(3), Q)).String(), 16, 64)
 	assert.Equal(t, "35", strconv.Itoa(int(o)))
 	o, _ = strconv.ParseInt(p.Eval(new(mod.Int).Init(big.NewInt(10), Q)).String(), 16, 64)
@@ -143,4 +142,22 @@ func TestPolynomial_Eval(t *testing.T) {
 	o, _ = strconv.ParseInt(p.Eval(new(mod.Int).Init(big.NewInt(1), Q)).String(), 16, 64)
 	assert.Equal(t, "7", strconv.Itoa(int(o)))
 
+}
+
+func TestPolynomial_Eval2(t *testing.T) {
+	p := new(Polynomial).Init([]*mod.Int{
+		new(mod.Int).Init(big.NewInt(5), Q),
+		new(mod.Int).Init(big.NewInt(1), Q), // x^1
+		new(mod.Int).Init(big.NewInt(0), Q), // x^2
+		new(mod.Int).Init(big.NewInt(1), Q), // x^3
+	})
+	n := new(Polynomial).Sub(p, new(Polynomial).Init([]*mod.Int{mod.NewInt64(35, Q)})) // p-y
+	println(p.ToString())
+	println("n", n.ToString())
+	// n := p // we can omit y (p(z))
+	d := new(Polynomial).Init([]*mod.Int{mod.NewInt64(-3, Q), mod.NewInt64(1, Q)}) // x-z
+	q, rem := new(Polynomial).Div(n, d)
+	println("mult of q x d : ", new(Polynomial).Mul(q, d).ToString())
+	println(q.ToString())
+	println(rem.ToString())
 }
