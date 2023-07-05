@@ -1,4 +1,4 @@
-package polynomial_commitment_kzg
+package commitment
 
 import (
 	"bytes"
@@ -7,7 +7,10 @@ import (
 	"fmt"
 )
 
-func setup() []byte {
+type hash_commiter struct {
+}
+
+func (hc hash_commiter) Setup() []byte {
 	r := make([]byte, 32)
 	_, err := rand.Read(r)
 	if err != nil {
@@ -16,7 +19,7 @@ func setup() []byte {
 	return r
 }
 
-func commit(x []byte, r []byte) []byte {
+func (hc hash_commiter) Commit(x []byte, r []byte) []byte {
 
 	// The slice should now contain random bytes instead of only zeroes.
 	vR := append(x, r...)
@@ -24,7 +27,7 @@ func commit(x []byte, r []byte) []byte {
 	return c[:]
 }
 
-func verify(x []byte, r []byte, c []byte) bool {
+func (hc hash_commiter) Verify(x []byte, r []byte, c []byte) bool {
 
 	vR := append(x, r...)
 	cc := sha256.Sum256(vR)

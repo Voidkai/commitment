@@ -1,4 +1,4 @@
-package polynomial_commitment_kzg
+package Polynomial_commitment
 
 import (
 	"commitment/primitives"

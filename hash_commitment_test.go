@@ -1,4 +1,4 @@
-package polynomial_commitment_kzg
+package commitment
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -7,9 +7,10 @@ import (
 
 func TestVerify(t *testing.T) {
 
-	r := setup()
+	hc := new(hash_commiter)
+	r := hc.Setup()
 	value := []byte("")
-	c := commit(value, r)
-	assert.Equal(t, true, verify(value, r, c))
+	c := hc.Commit(value, r)
+	assert.Equal(t, true, hc.Verify(value, r, c))
 
 }
